@@ -111,6 +111,9 @@ class _MyHomePageState extends State<MyHomePage> {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: ListTile(
+          leading: itemTodo.status == 1
+              ? const Text('Success')
+              : const Text('Pending'),
           title: Text(itemTodo.title),
           subtitle: Text(itemTodo.description),
           isThreeLine: true,
