@@ -1,10 +1,9 @@
-// ignore_for_file: deprecated_member_use
-
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:todosapp/db_data/db_table.dart';
+import 'package:todosapp/second_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -17,15 +16,15 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Provider(
-      create: (_) => MyDatabase(),
-      child: MaterialApp(
-        title: 'Flutter Demo',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
-        home: const MyHomePage(),
-      ),
-    );
+        create: (_) => MyDatabase(),
+        child: MaterialApp(
+          title: 'Flutter Demo',
+          theme: ThemeData(
+            primarySwatch: Colors.blue,
+          ),
+          home: const MyHomePage(),
+          // Provider(create:(_)=>TagDao() )
+        ));
   }
 }
 
@@ -122,79 +121,90 @@ class _MyHomePageState extends State<MyHomePage> {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Container(
-          color: colour,
-          width: double.infinity,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                Text(itemTodo.id.toString()),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                    width: 200,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        InkWell(
-                            onTap: () {
-                              database.updateTodo(itemTodo.copyWith(
-                                  title: element,
-                                  description: description[index]));
-                            },
-                            child: Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  itemTodo.title,
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ))),
-                        Align(
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => StepPage(
+                        fkey: itemTodo.tagId!,
+                      )));
+        },
+        child: Container(
+            color: colour,
+            width: double.infinity,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                children: [
+                  Text(itemTodo.tagId.toString()),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                      width: 200,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          InkWell(
+                              onTap: () {
+                                database.updateTodo(itemTodo.copyWith(
+                                    title: element,
+                                    description: description[index]));
+                              },
+                              child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    itemTodo.title,
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ))),
+                          Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(itemTodo.description)),
+                          Align(
                             alignment: Alignment.centerLeft,
-                            child: Text(itemTodo.description)),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            itemTodo.creationTime.toString(),
+                            child: Text(
+                              itemTodo.creationTime.toString(),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                Row(
-                  children: [
-                    itemTodo.status == 0
-                        ? Row(
-                            children: [
-                              IconButton(
-                                  onPressed: () {
-                                    database.updateTodo(
-                                        itemTodo.copyWith(status: 1));
-                                  },
-                                  icon: Icon(Icons.done)),
-                              IconButton(
-                                  onPressed: () {
-                                    database.updateTodo(
-                                        itemTodo.copyWith(status: 2));
-                                  },
-                                  icon: Icon(Icons.dangerous))
-                            ],
-                          )
-                        : Text(''),
-                    IconButton(
-                      onPressed: () {
-                        database.deleteTodo(itemTodo);
-                      },
-                      icon: Icon(Icons.delete),
-                    )
-                  ],
-                )
-              ],
-            ),
-          )
+                  Row(
+                    children: [
+                      itemTodo.status == 0
+                          ? Row(
+                              children: [
+                                IconButton(
+                                    onPressed: () {
+                                      database.updateTodo(
+                                          itemTodo.copyWith(status: 1));
+                                    },
+                                    icon: Icon(Icons.done)),
+                                IconButton(
+                                    onPressed: () {
+                                      database.updateTodo(
+                                          itemTodo.copyWith(status: 2));
+                                    },
+                                    icon: Icon(Icons.dangerous))
+                              ],
+                            )
+                          : Text(''),
+                      IconButton(
+                        onPressed: () {
+                          database.deleteTodo(itemTodo);
+                        },
+                        icon: Icon(Icons.delete),
+                      )
+                    ],
+                  )
+                ],
+              ),
+            )
 //
-          ),
+            ),
+      ),
     );
   }
 }
