@@ -109,54 +109,92 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget _buildListItem(Todo itemTodo, MyDatabase database) {
+    String element = title[Random().nextInt(title.length)];
+    int index = title.indexOf(element);
     final database = Provider.of<MyDatabase>(context, listen: false);
+    Color colour;
+    if (itemTodo.status == 1) {
+      colour = Colors.green;
+    } else if (itemTodo.status == 2)
+      colour = Colors.red;
+    else
+      colour = Colors.transparent;
 
-    return ListTile(
-      minLeadingWidth: 0,
-
-      leading: Text(itemTodo.id.toString()),
-      title: InkWell(onTap: () {
-
-      }, child: Text(itemTodo.title)),
-      subtitle: Align(
-        alignment: Alignment.centerLeft,
-        child: Column(
-          children: [
-            Text(itemTodo.description),
-            Text(
-              itemTodo.creationTime.toString(),
-            ),
-          ],
-        ),
-      ),
-      isThreeLine: true,
-      trailing: Row(
-        children: [
-          if (itemTodo.status == 1)
-            Row(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Container(
+          color: colour,
+          width: double.infinity,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
               children: [
-                IconButton(
-                    onPressed: () {
-                      database.updateTodo(itemTodo.copyWith(status: 1));
-                    },
-                    icon: Icon(Icons.done)),
-                IconButton(
-                    onPressed: () {
-                      database.updateTodo(itemTodo.copyWith(status: 1));
-                    },
-                    icon: Icon(Icons.done))
+                Text(itemTodo.id.toString()),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    width: 200,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        InkWell(
+                            onTap: () {
+                              database.updateTodo(itemTodo.copyWith(
+                                  title: element,
+                                  description: description[index]));
+                            },
+                            child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  itemTodo.title,
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ))),
+                        Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(itemTodo.description)),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            itemTodo.creationTime.toString(),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Row(
+                  children: [
+                    itemTodo.status == 0
+                        ? Row(
+                            children: [
+                              IconButton(
+                                  onPressed: () {
+                                    database.updateTodo(
+                                        itemTodo.copyWith(status: 1));
+                                  },
+                                  icon: Icon(Icons.done)),
+                              IconButton(
+                                  onPressed: () {
+                                    database.updateTodo(
+                                        itemTodo.copyWith(status: 2));
+                                  },
+                                  icon: Icon(Icons.dangerous))
+                            ],
+                          )
+                        : Text(''),
+                    IconButton(
+                      onPressed: () {
+                        database.deleteTodo(itemTodo);
+                      },
+                      icon: Icon(Icons.delete),
+                    )
+                  ],
+                )
               ],
-            )
-          else
-            Text(''),
-          IconButton(
-            onPressed: () {
-              database.deleteTodo(itemTodo);
-            },
-            icon: Icon(Icons.delete),
+            ),
           )
-        ],
-      ),
+//
+          ),
     );
   }
 }
