@@ -8,18 +8,21 @@ part of 'db_table.dart';
 
 // ignore_for_file: unnecessary_brace_in_string_interps, unnecessary_this
 class Todo extends DataClass implements Insertable<Todo> {
+  final int? id;
   final String title;
   final String description;
   final DateTime? creationTime;
-  final int? status;
+  final int status;
   Todo(
-      {required this.title,
+      {this.id,
+      required this.title,
       required this.description,
       this.creationTime,
-      this.status});
+      required this.status});
   factory Todo.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return Todo(
+      id: const IntType().mapFromDatabaseResponse(data['${effectivePrefix}id']),
       title: const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}title'])!,
       description: const StringType()
@@ -27,32 +30,33 @@ class Todo extends DataClass implements Insertable<Todo> {
       creationTime: const DateTimeType()
           .mapFromDatabaseResponse(data['${effectivePrefix}creation_time']),
       status: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}status']),
+          .mapFromDatabaseResponse(data['${effectivePrefix}status'])!,
     );
   }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (!nullToAbsent || id != null) {
+      map['id'] = Variable<int?>(id);
+    }
     map['title'] = Variable<String>(title);
     map['body'] = Variable<String>(description);
     if (!nullToAbsent || creationTime != null) {
       map['creation_time'] = Variable<DateTime?>(creationTime);
     }
-    if (!nullToAbsent || status != null) {
-      map['status'] = Variable<int?>(status);
-    }
+    map['status'] = Variable<int>(status);
     return map;
   }
 
   TodosCompanion toCompanion(bool nullToAbsent) {
     return TodosCompanion(
+      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
       title: Value(title),
       description: Value(description),
       creationTime: creationTime == null && nullToAbsent
           ? const Value.absent()
           : Value(creationTime),
-      status:
-          status == null && nullToAbsent ? const Value.absent() : Value(status),
+      status: Value(status),
     );
   }
 
@@ -60,29 +64,33 @@ class Todo extends DataClass implements Insertable<Todo> {
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Todo(
+      id: serializer.fromJson<int?>(json['id']),
       title: serializer.fromJson<String>(json['title']),
       description: serializer.fromJson<String>(json['description']),
       creationTime: serializer.fromJson<DateTime?>(json['creationTime']),
-      status: serializer.fromJson<int?>(json['status']),
+      status: serializer.fromJson<int>(json['status']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'id': serializer.toJson<int?>(id),
       'title': serializer.toJson<String>(title),
       'description': serializer.toJson<String>(description),
       'creationTime': serializer.toJson<DateTime?>(creationTime),
-      'status': serializer.toJson<int?>(status),
+      'status': serializer.toJson<int>(status),
     };
   }
 
   Todo copyWith(
-          {String? title,
+          {int? id,
+          String? title,
           String? description,
           DateTime? creationTime,
           int? status}) =>
       Todo(
+        id: id ?? this.id,
         title: title ?? this.title,
         description: description ?? this.description,
         creationTime: creationTime ?? this.creationTime,
@@ -91,6 +99,7 @@ class Todo extends DataClass implements Insertable<Todo> {
   @override
   String toString() {
     return (StringBuffer('Todo(')
+          ..write('id: $id, ')
           ..write('title: $title, ')
           ..write('description: $description, ')
           ..write('creationTime: $creationTime, ')
@@ -100,11 +109,12 @@ class Todo extends DataClass implements Insertable<Todo> {
   }
 
   @override
-  int get hashCode => Object.hash(title, description, creationTime, status);
+  int get hashCode => Object.hash(id, title, description, creationTime, status);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Todo &&
+          other.id == this.id &&
           other.title == this.title &&
           other.description == this.description &&
           other.creationTime == this.creationTime &&
@@ -112,30 +122,36 @@ class Todo extends DataClass implements Insertable<Todo> {
 }
 
 class TodosCompanion extends UpdateCompanion<Todo> {
+  final Value<int?> id;
   final Value<String> title;
   final Value<String> description;
   final Value<DateTime?> creationTime;
-  final Value<int?> status;
+  final Value<int> status;
   const TodosCompanion({
+    this.id = const Value.absent(),
     this.title = const Value.absent(),
     this.description = const Value.absent(),
     this.creationTime = const Value.absent(),
     this.status = const Value.absent(),
   });
   TodosCompanion.insert({
+    this.id = const Value.absent(),
     required String title,
     required String description,
     this.creationTime = const Value.absent(),
-    this.status = const Value.absent(),
+    required int status,
   })  : title = Value(title),
-        description = Value(description);
+        description = Value(description),
+        status = Value(status);
   static Insertable<Todo> custom({
+    Expression<int?>? id,
     Expression<String>? title,
     Expression<String>? description,
     Expression<DateTime?>? creationTime,
-    Expression<int?>? status,
+    Expression<int>? status,
   }) {
     return RawValuesInsertable({
+      if (id != null) 'id': id,
       if (title != null) 'title': title,
       if (description != null) 'body': description,
       if (creationTime != null) 'creation_time': creationTime,
@@ -144,11 +160,13 @@ class TodosCompanion extends UpdateCompanion<Todo> {
   }
 
   TodosCompanion copyWith(
-      {Value<String>? title,
+      {Value<int?>? id,
+      Value<String>? title,
       Value<String>? description,
       Value<DateTime?>? creationTime,
-      Value<int?>? status}) {
+      Value<int>? status}) {
     return TodosCompanion(
+      id: id ?? this.id,
       title: title ?? this.title,
       description: description ?? this.description,
       creationTime: creationTime ?? this.creationTime,
@@ -159,6 +177,9 @@ class TodosCompanion extends UpdateCompanion<Todo> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int?>(id.value);
+    }
     if (title.present) {
       map['title'] = Variable<String>(title.value);
     }
@@ -169,7 +190,7 @@ class TodosCompanion extends UpdateCompanion<Todo> {
       map['creation_time'] = Variable<DateTime?>(creationTime.value);
     }
     if (status.present) {
-      map['status'] = Variable<int?>(status.value);
+      map['status'] = Variable<int>(status.value);
     }
     return map;
   }
@@ -177,6 +198,7 @@ class TodosCompanion extends UpdateCompanion<Todo> {
   @override
   String toString() {
     return (StringBuffer('TodosCompanion(')
+          ..write('id: $id, ')
           ..write('title: $title, ')
           ..write('description: $description, ')
           ..write('creationTime: $creationTime, ')
@@ -190,6 +212,12 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, Todo> {
   final GeneratedDatabase _db;
   final String? _alias;
   $TodosTable(this._db, [this._alias]);
+  final VerificationMeta _idMeta = const VerificationMeta('id');
+  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
+      'id', aliasedName, true,
+      typeName: 'INTEGER',
+      requiredDuringInsert: false,
+      defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _titleMeta = const VerificationMeta('title');
   late final GeneratedColumn<String?> title = GeneratedColumn<String?>(
       'title', aliasedName, false,
@@ -209,11 +237,11 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, Todo> {
           typeName: 'INTEGER', requiredDuringInsert: false);
   final VerificationMeta _statusMeta = const VerificationMeta('status');
   late final GeneratedColumn<int?> status = GeneratedColumn<int?>(
-      'status', aliasedName, true,
-      typeName: 'INTEGER', requiredDuringInsert: false);
+      'status', aliasedName, false,
+      typeName: 'INTEGER', requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns =>
-      [title, description, creationTime, status];
+      [id, title, description, creationTime, status];
   @override
   String get aliasedName => _alias ?? 'todos';
   @override
@@ -223,6 +251,9 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, Todo> {
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
     if (data.containsKey('title')) {
       context.handle(
           _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
@@ -244,12 +275,14 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, Todo> {
     if (data.containsKey('status')) {
       context.handle(_statusMeta,
           status.isAcceptableOrUnknown(data['status']!, _statusMeta));
+    } else if (isInserting) {
+      context.missing(_statusMeta);
     }
     return context;
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
+  Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Todo map(Map<String, dynamic> data, {String? tablePrefix}) {
     return Todo.fromData(data,

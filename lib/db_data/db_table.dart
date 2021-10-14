@@ -13,11 +13,11 @@ part 'db_table.g.dart';
 // this will generate a table called "todos" for us. The rows of that table will
 // be represented by a class called "Todo".
 class Todos extends Table {
-  IntColumn get id => integer().autoIncrement().call();
+  IntColumn get id => integer().nullable().autoIncrement()();
   TextColumn get title => text().withLength(min: 6, max: 32)();
   TextColumn get description => text().named('body')();
   DateTimeColumn get creationTime => dateTime().nullable()();
-  IntColumn get status => integer().nullable()();
+  IntColumn get status => integer()();
 }
 
 LazyDatabase _openConnection() {
@@ -32,7 +32,8 @@ LazyDatabase _openConnection() {
 }
 
 // this annotation tells drift to prepare a database class that uses both of the
-// tables we just defined. We'll see how to use that database class in a moment.
+// tables we just define
+// d. We'll see how to use that database class in a moment.
 @DriftDatabase(tables: [
   Todos,
 ])
@@ -47,4 +48,6 @@ class MyDatabase extends _$MyDatabase {
   Future<List<Todo>> getAllTodos() => select(todos).get();
   Stream<List<Todo>> watchAllTodos() => select(todos).watch();
   Future insertTodo(Todo todo) => into(todos).insert(todo);
+  Future deleteTodo(Todo todo) => delete(todos).delete(todo);
+  Future updateTodo(Todo todo) => update(todos).replace(todo);
 }
