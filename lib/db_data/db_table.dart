@@ -46,4 +46,8 @@ class MyDatabase extends _$MyDatabase {
   // are covered later in this readme.
   @override
   int get schemaVersion => 1;
+  Future<List<Todo>> getAllTodos() => select(todos).get();
+  Stream<List<Todo>> watchAllTodos() => select(todos).watch();
+  Future insertTodo(Todo todo) => into(todos).insert(todo);
+
 }
