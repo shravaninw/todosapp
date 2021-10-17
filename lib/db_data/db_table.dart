@@ -71,6 +71,7 @@ class MyDatabase extends _$MyDatabase {
   Stream<List<Content>> watchAllContent(int key) =>
       (select(contents)..where((tbl) => tbl.tagId.equals(key))).watch();
   Future insertContent(Content content) => into(contents).insert(content);
+  Future deleteContent(Content content) => delete(contents).delete(content);
 }
 
 class Contents extends Table {

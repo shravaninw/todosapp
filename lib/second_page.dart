@@ -63,6 +63,13 @@ class StepPage extends StatelessWidget {
     return ListTile(
       title: Text(itemContent.description),
       subtitle: Text(itemContent.creationTime.toString()),
+      isThreeLine: true,
+      trailing: IconButton(
+        icon: Icon(Icons.delete),
+        onPressed: () {
+          database.deleteContent(itemContent);
+        },
+      ),
     );
   }
 }
